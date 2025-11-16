@@ -51,7 +51,7 @@ This is tool is a perfect companion for QGIS or other GIS tool. This provides a 
 Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com/d2lf.html) 
 
 **Demo Data** - Use the data below to experiment with the tool. See the screenshots below for examples using this demo data. 
-- Custom Map: https:\/\/miguel.nyc3.digitaloceanspaces.com/{z}/{x}/{-y}.png
+- Custom Map: <pre>https\:\/\/miguel.nyc3.digitaloceanspaces.com/{z}/{x}/{-y}.png</pre>
 - Zoom location: 35.731585,-78.702636
 - Origin: 35.731086,-78.701864
 - Baseline: 35.731985,-78.701798
