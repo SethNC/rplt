@@ -60,8 +60,8 @@ Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com
 
 ## 📸 Screenshot
 
-![Research Plot Layout Tool Screenshot 1](./rplt_1.png)
-![Research Plot Layout Tool Screenshot 2](./rplt_2.png)
+![Research Plot Layout Tool Screenshot 1](./rplt_2.png)
+![Research Plot Layout Tool Screenshot 2](./rplt_1.png)
 > *Example layout 4 treatments × 4 replications, 25m x 25m plots, 5m buffers with 10m on plot front, and 'Row-major numbering*
 
 ---
