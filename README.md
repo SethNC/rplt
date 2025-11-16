@@ -5,17 +5,17 @@ Research Plot Layout Tool for replicated agricultural field trials.
 [![Leaflet](https://img.shields.io/badge/Powered%20by-Leaflet-blue)](https://leafletjs.com/)
 [![Turf.js](https://img.shields.io/badge/Geometry-Turf.js-green)](https://turfjs.org/)
 
-A **web-based interactive tool** for quickly creating replicated agricultural field trials. Plot layouts are displayed directly on satellite imagery or a custom zxy tiled map. Perfect for field trial planning. 
+**web-based interactive tool** for quickly creating replicated agricultural field trials. Plot layouts are displayed directly on satellite imagery or a custom zxy tiled map. Perfect for field trial planning. 
 
 This tool coupled with a [SprakFun Facet and SW Maps](https://learn.sparkfun.com/tutorials/sparkfun-rtk-facet-hookup-guide/all) allows for rapid and accurate plot layout in the field.
 
-Use 'total_research_area.kml' to plan drone missions to monitor the trial during the growing season. THis file can be loaded into a DJI Mavic 3 Multispectral from a SD card and used as the boundary for flight missions. Be sure to set the margin in the advanced settings so their is sufficiuent overlap at the edges of the trial for good orthomosaic reconstruction.  
+Use 'total_research_area.kml' to plan drone missions to monitor the trial during the growing season. This file can be loaded into a DJI Mavic 3 Multispectral from a SD card and used as the boundary for flight missions. Be sure to set the margin in the advanced settings so their is sufficiuent overlap at the edges of the trial for good orthomosaic reconstruction.  
 
-If applying treatments with a spray drone or percision ag equipement the plot ploygons can be used as field boundaries to program the application equipement. If need to be sure to plan a buffered area to clean out and prime the srpay drone or application equipement between treatment applications. 
+If applying treatments with a spray drone or percision ag equipement the plot polygons can be used as field boundaries to program the application equipement. If need to be sure to plan a buffered area to clean out and prime the spray drone or application equipement between treatment applications. 
 
-When analysing data, plot boundaries are already defined and should shorted the initial analysis.
+When analysing data, plot boundaries are already defined and should shorten the inlitial analysis.
 
-This is tool is a perfect companion for QGIS or other GIS tool. This provides a starting place to rapidly layout field trials and program drones.
+This tool is a perfect companion for QGIS or other GIS tool. This provides a starting place to rapidly layout field trials and program drones.
 
 ## Summary of work flow 
 
@@ -62,7 +62,7 @@ Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com
 
 ![Research Plot Layout Tool Screenshot 1](./rplt_2.png)
 ![Research Plot Layout Tool Screenshot 2](./rplt_1.png)
-> *Example layout 4 treatments × 4 replications, 25m x 25m plots, 5m buffers with 10m on plot front, and 'Row-major numbering*
+> *Example layout 4 treatments × 4 replications, 25m x 25m plots, 5m buffers with 10m on plot front, and Row-major numbering*
 
 ---
 
@@ -78,7 +78,7 @@ Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com
 4. Click **Generate Layout**
 5. Download output files (GeoJSON, KML, CSV, ZIP)
 
-> 💡 **Pro Tip**: Use the "Zoom to Location" panel to quickly navigate to your field. USe google.com/maps if you need to rapidly find latitude and longitude of your trial. These can be copied form Google Maps by right clicking on the location. 
+> 💡 **Pro Tip**: Use the "Zoom to Location" panel to quickly navigate to your field. Use google.com/maps if you need to rapidly find latitude and longitude of your trial. These can be copied from Google Maps by right clicking on the location. 
 
 ---
 
@@ -100,7 +100,7 @@ Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com
 
 Want to use your own imagery (e.g., drone orthomosaic)? Process your drone images with [webodm.net](https://webodm.net/) and choose the option to generate tiles. These can be added locally with 'file://local directory/{z},{x}/{y}.png' or from a web location if tiles are on a server. 
 
-Already have an orthiomosaci? Use QGIS to generate the tiles. Open the processing tool box (clt+alt+T), under raster tools choose 'Generate XYZ Tiles (Directory)' and then follow the prompts.  
+Already have an orthomosaic? Use QGIS to generate the tiles. Open the processing tool box (Ctrl+Alt+T), under raster tools choose 'Generate XYZ Tiles (Directory)' and then follow the prompts.  
 
 Be sure you know the format of your tiles. If in TMS form be sure to use a '-y' value such as this example '{z}/{x}/{-y}.png`. 
 
@@ -110,9 +110,9 @@ This tool follows the **Unix philosophy** — *programs that do one thing and do
 
 This tool is designed for:
 - Generating accurate, GIS-ready plot layouts from real-world coordinates.
-- Rendereding plots instantly.
-- Producing intermediate outputs in GeoJSON, CSV, KML formates
-- Sticking to data science princples, reproducibility + transparency > automation
+- Rendering plots instantly.
+- Producing intermediate outputs in GeoJSON, CSV, KML formats
+- Sticking to data science principles, reproducibility + transparency > automation
 
 ---
 
