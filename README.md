@@ -98,7 +98,7 @@ Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com
 
 ## 🗺️ Custom Tile Layers
 
-Want to use your own imagery (e.g., drone orthomosaic)? Process your drone images with [webodm.net](https://webodm.net/) and choose the option to generate tiles. These can be added locally with 'file://local directory/{z},{x}/{y}.png' or from a web location 'http://address/. . .'. 
+Want to use your own imagery (e.g., drone orthomosaic)? Process your drone images with [webodm.net](https://webodm.net/) and choose the option to generate tiles. These can be added locally with 'file://local directory/{z},{x}/{y}.png' or from a web location if tiles are on a server. 
 
 Already have an orthiomosaci? Use QGIS to generate the tiles. Open the processing tool box (clt+alt+T), under raster tools choose 'Generate XYZ Tiles (Directory)' and then follow the prompts.  
 
