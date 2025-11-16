@@ -104,24 +104,18 @@ Already have an orthiomosaci? Use QGIS to generate the tiles. Open the processin
 
 Be sure you know the format of your tiles. If in TMS form be sure to use a '-y' value such as this example '{z}/{x}/{-y}.png`. 
 
-## 🧠 Design Philosophy: *Do One Thing Well, Show Your Work*
-Here's a **concise, philosophy-focused addition** you can insert into your README (e.g., after the **Features** section or as a standalone **Philosophy** section). It captures your "small tools, visible steps" ethos — the **Unix/Linux philosophy** applied to geospatial data science.
+### 🧠 Design Philosophy: *Do One Thing Well*
 
----
-
-### 🧠 Design Philosophy: *Do One Thing Well, Show Your Work*
-
-This tool follows the **Unix philosophy** — *write programs that do one thing and do it well* — adapted for modern field research and data science.
+This tool follows the **Unix philosophy** — *programs that do one thing and do it well* 
 
 This tool is designed for:
-- **Narrowc focus**: Generate accurate, GIS-ready plot layouts from real-world coordinates.
-- **Exposing every step**: You see origin, baseline, buffers, and plots rendered instantly.
-- **Producing intermediate outputs**: GeoJSON, CSV, KML — each file is inspectable, reusable, and chainable.
-- **Data science**: Reproducibility + transparency > automation theater.
+- Generating accurate, GIS-ready plot layouts from real-world coordinates.
+- Rendereding plots instantly.
+- Producing intermediate outputs in GeoJSON, CSV, KML formates
+- Sticking to data science princples, reproducibility + transparency > automation
 
 ---
 
-**Learn more**:  
-[The Unix Philosophy](https://homepage.cs.uri.edu/faculty/wolfe/book/Readings/Reading13.htm) – Classic essay by Doug McIlroy  
+**Learn more about the Unix philosophy**:  
 [“The Art of Unix Programming” by Eric S. Raymond](http://www.catb.org/esr/writings/taoup/html/ch01s06.html) – Chapter on modularity and transparency
 
