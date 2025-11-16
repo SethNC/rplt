@@ -1,0 +1,508 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Research Plot Layout Tool</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; display:flex; height:100vh; overflow:hidden;}
+    #sidebar { width:420px; background:#fff; padding:12px; overflow:auto; border-right:1px solid #ddd; }
+    #map { flex:1; }
+    label { display:block; margin-top:8px; font-weight:600; }
+    input, select { width:100%; padding:6px; margin-top:4px; box-sizing:border-box; }
+    button { margin-top:8px; padding:6px 10px; }
+    .small { font-size:0.9em; color:#555; }
+    #status { margin-top:8px; padding:6px; background:#f7f7f7; border:1px solid #eee; min-height:40px; font-size:0.9em;}
+    hr { margin:10px 0; }
+    .legend-item { display:flex; align-items:center; margin-top:4px; }
+    .color-box { width:20px; height:12px; margin-right:6px; border:1px solid #000; }
+    .flex-row { display:flex; gap:6px; }
+    .flex-row > * { flex:1; }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h3>Research Plot Layout Tool</h3>
+    <p class="small">
+      1) Load custom tiles (optional).<br>
+      2) Set trial Origin & Baseline.<br>
+      3) Enter parameters for the experiment.<br>
+      4) Click <b>Generate Layout</b>.<br>
+      5) Download output files.<br>
+    </p>
+
+    <!-- Base Tiles -->
+    <fieldset style="border:1px solid #ccc; padding:8px;">
+      <legend><b>Base Tiles</b></legend>
+      <label>Custom tile template (optional)</label>
+      <input id="tileTemplate" type="text" placeholder="https://miguel.nyc3.digitaloceanspaces.com/{z}/{x}/{-y}.png">
+      <label style="font-weight:600; margin-top:8px;">Overzoom options</label>
+      <label style="font-weight:600; font-size:0.9em;">
+        Enable overzoom <input type="checkbox" id="enableOverzoom" checked style="width:auto;margin-left:6px">
+      </label>
+      <label>Map max zoom</label>
+      <input id="mapMaxZoom" type="number" min="0" max="32" value="32">
+      <label>Native tile max zoom</label>
+      <input id="nativeMaxZoom" type="number" min="0" max="32" value="22" placeholder="e.g. 22">
+      <div style="margin-top:6px;">
+        <button id="btnLoadTiles">Load Tiles</button>
+        <button id="btnResetBase">Reset to Default Base</button>
+      </div>
+      <div id="tileStatus" class="small" style="margin-top:6px;color:#444">Base layer: Esri Imagery (default)</div>
+    </fieldset>
+
+    <!-- Zoom to Location -->
+    <fieldset style="border:1px solid #ccc; padding:8px; margin-top:10px;">
+      <legend><b>Zoom to Location</b></legend>
+      <label>Latitude</label>
+      <input id="zoomLat" type="number" step="any" placeholder="e.g. 35.73051">
+      <label>Longitude</label>
+      <input id="zoomLon" type="number" step="any" placeholder="e.g. -78.70363">
+      <button id="btnZoomTo">Zoom to Location</button>
+      <div class="small" style="margin-top:6px;">Enter coordinates to quickly center the map</div>
+    </fieldset>
+
+    <!-- Origin & Baseline -->
+    <fieldset style="border:1px solid #ccc; padding:8px; margin-top:10px;">
+      <legend><b>Origin & Baseline</b></legend>
+      <label>Origin (Lower-left)</label>
+      <input id="originLat" type="number" step="any" placeholder="Latitude">
+      <input id="originLon" type="number" step="any" placeholder="Longitude">
+      <div class="flex-row" style="margin-top:6px;">
+        <button id="btnOriginSetInput">Set Origin from Inputs</button>
+        <button id="btnSetOrigin">Set Origin (click map)</button>
+      </div>
+      <label style="margin-top:8px;">Baseline Point (to your right)</label>
+      <input id="baseLat" type="number" step="any" placeholder="Latitude">
+      <input id="baseLon" type="number" step="any" placeholder="Longitude">
+      <div class="flex-row" style="margin-top:6px;">
+        <button id="btnBaseSetInput">Set Baseline from Inputs</button>
+        <button id="btnSetBaseline">Set Baseline (click map)</button>
+      </div>
+      <div style="margin-top:8px;">
+        <button id="btnClearPoints">Clear Points</button>
+      </div>
+      <div class="small" style="margin-top:6px;">(Single click to set. Mode ends after one placement.)</div>
+    </fieldset>
+
+    <div id="status">Origin: <em>not set</em><br>Baseline: <em>not set</em></div>
+
+    <!-- Experiment Design -->
+    <fieldset style="border:1px solid #ccc; padding:8px; margin-top:10px;">
+      <legend><b>Experiment Design</b></legend>
+      <label>Origin Reference</label>
+      <select id="originRef">
+        <option value="">-- select --</option>
+        <option value="plot">Origin = lower-left of plot 101</option>
+        <option value="area">Origin = lower-left of entire area (incl. buffers)</option>
+      </select>
+      <label>Units</label>
+      <select id="units">
+        <option value="">-- select --</option>
+        <option value="metric">Metric (meters)</option>
+        <option value="imperial">US Imperial (feet)</option>
+      </select>
+      <label>Number of treatments</label>
+      <input id="nTreat" type="number" placeholder="e.g. 6">
+      <label>Number of replications</label>
+      <input id="nReps" type="number" placeholder="e.g. 3">
+
+      <!-- Plot Numbering Scheme -->
+      <label style="margin-top:8px;">Plot Numbering</label>
+      <select id="numberingScheme">
+        <option value="row">Row-major (101 → 106, then 201 →)</option>
+        <option value="column">Column-major (101 → 301, then 102 →)</option>
+        <option value="snake">Snake (101 → 106, 206 ← 201)</option>
+      </select>
+      <div class="small" id="numberingPreview" style="margin-top:4px; color:#666;">
+        Preview: 101 → 106<br>201 → 206
+      </div>
+    </fieldset>
+
+    <!-- Plot Dimensions -->
+    <fieldset style="border:1px solid #ccc; padding:8px; margin-top:10px;">
+      <legend><b>Plot Dimensions</b></legend>
+      <label>Plot width</label>
+      <input id="plotWidth" type="number" step="any" placeholder="e.g. 3">
+      <label>Plot length</label>
+      <input id="plotLength" type="number" step="any" placeholder="e.g. 5">
+    </fieldset>
+
+    <!-- Spacing and Buffers -->
+    <fieldset style="border:1px solid #ccc; padding:8px; margin-top:10px;">
+      <legend><b>Spacing and Buffers</b></legend>
+      <label>Space between reps</label>
+      <input id="spaceBetweenReps" type="number" step="any" placeholder="e.g. 1">
+      <label>Left buffer</label><input id="leftBuffer" type="number" step="any">
+      <label>Right buffer</label><input id="rightBuffer" type="number" step="any">
+      <label>Back buffer</label><input id="backBuffer" type="number" step="any">
+      <label>Front buffer</label><input id="frontBuffer" type="number" step="any">
+    </fieldset>
+
+    <button id="btnGenerate" style="margin-top:10px;">Generate Layout</button>
+
+    <label style="margin-top:10px;">
+      <input type="checkbox" id="toggleLabels" checked> Show plot labels
+    </label>
+
+    <!-- RESTORED: Download Section -->
+    <div id="fileLinks" style="display:none; margin-top:10px;">
+      <h4>Downloads</h4>
+      <div id="linksHere"></div>
+      <button id="btnDownloadZip">Download All as ZIP</button>
+    </div>
+
+    <hr/>
+    <h4>Legend</h4>
+    <div class="legend-item"><div class="color-box" style="background:#2b7cff"></div> Treatment Plots</div>
+    <div class="legend-item"><div class="color-box" style="background:#d11a2a"></div> Total Research Area (plots only)</div>
+    <div class="legend-item"><div class="color-box" style="background:#ffa500"></div> Total Area (incl. buffers)</div>
+    <div class="legend-item"><div class="color-box" style="background:#f1c40f"></div> Plot Vertices</div>
+    <div class="legend-item"><div class="color-box" style="background:#000"></div> Plot Centers</div>
+    <div class="legend-item"><div class="color-box" style="background:#0a0"></div> Origin Point</div>
+    <div class="legend-item"><div class="color-box" style="background:#00a"></div> Baseline Point</div>
+  </div>
+
+  <div id="map"></div>
+
+  <!-- Libraries -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tokml@0.4.0/tokml.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.2/proj4.js"></script>
+
+  <script>
+  // --- Map & Tile Management ---
+  let baseTileLayer = null;
+  const defaultBaseUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+
+  const map = L.map('map', { maxZoom: 32 }).setView([39,-96],5);
+  map.doubleClickZoom.disable();
+
+  function addBaseLayer(url, opts={}) {
+    if (baseTileLayer) map.removeLayer(baseTileLayer);
+    const options = {
+      attribution: 'Esri Imagery',
+      maxZoom: opts.maxZoom ?? 32,
+      maxNativeZoom: opts.maxNativeZoom
+    };
+    baseTileLayer = L.tileLayer(url, options).addTo(map);
+    baseTileLayer.on('tileerror', () => document.getElementById('tileStatus').textContent = 'Tile load error.');
+    baseTileLayer.on('load', () => document.getElementById('tileStatus').textContent = 'Tiles loaded.');
+  }
+
+  addBaseLayer(defaultBaseUrl, { maxNativeZoom: 22 });
+  document.getElementById('tileStatus').textContent = 'Base layer: Esri Imagery (default)';
+
+  document.getElementById('btnLoadTiles').onclick = () => {
+    const url = document.getElementById('tileTemplate').value.trim();
+    if (!url) { alert('Enter tile URL or clear to use default.'); return; }
+    const maxZoom = parseInt(document.getElementById('mapMaxZoom').value || 32, 10);
+    const nativeMax = document.getElementById('nativeMaxZoom').value ? parseInt(document.getElementById('nativeMaxZoom').value, 10) : null;
+    map.options.maxZoom = maxZoom; map.setMaxZoom(maxZoom);
+    const opts = { maxZoom };
+    if (document.getElementById('enableOverzoom').checked && nativeMax) opts.maxNativeZoom = nativeMax;
+    addBaseLayer(url, opts);
+    document.getElementById('tileStatus').textContent = 'Custom tiles loaded.';
+  };
+
+  document.getElementById('btnResetBase').onclick = () => {
+    const maxZoom = parseInt(document.getElementById('mapMaxZoom').value || 32, 10);
+    map.options.maxZoom = maxZoom; map.setMaxZoom(maxZoom);
+    addBaseLayer(defaultBaseUrl, { maxZoom, maxNativeZoom: 22 });
+    document.getElementById('tileStatus').textContent = 'Base layer: Esri Imagery (default)';
+  };
+
+  // --- Layers & State ---
+  const plotLayer = L.layerGroup().addTo(map);
+  const areaLayer = L.layerGroup().addTo(map);
+  const pointLayer = L.layerGroup().addTo(map);
+  let originLatLng = null, baselineLatLng = null;
+  let originMarker = null, baselineMarker = null;
+  let mode = null;
+  const status = document.getElementById('status');
+
+  function fmtLL(ll) { return ll ? `${ll.lat.toFixed(6)},${ll.lng.toFixed(6)}` : 'n/a'; }
+  function setStatusText() {
+    status.innerHTML = `Origin: ${fmtLL(originLatLng)}<br>Baseline: ${fmtLL(baselineLatLng)}${mode ? `<br><em>Click to set ${mode}</em>` : ''}`;
+  }
+
+  // --- Point Placement ---
+  function setMarkerFromInput(type) {
+    const lat = parseFloat(document.getElementById(type + 'Lat').value);
+    const lon = parseFloat(document.getElementById(type === 'origin' ? 'originLon' : 'baseLon').value);
+    if (isNaN(lat) || isNaN(lon)) { alert('Invalid coordinates'); return; }
+    const ll = L.latLng(lat, lon);
+    if (type === 'origin') {
+      if (originMarker) map.removeLayer(originMarker);
+      originLatLng = ll;
+      originMarker = L.circleMarker(ll, { color: '#0a0', radius: 6, weight: 2 }).addTo(map);
+    } else {
+      if (baselineMarker) map.removeLayer(baselineMarker);
+      baselineLatLng = ll;
+      baselineMarker = L.circleMarker(ll, { color: '#00a', radius: 6, weight: 2 }).addTo(map);
+    }
+    setStatusText();
+  }
+
+  document.getElementById('btnOriginSetInput').onclick = () => setMarkerFromInput('origin');
+  document.getElementById('btnBaseSetInput').onclick = () => setMarkerFromInput('base');
+
+  function enterPlacementMode(which) {
+    mode = which;
+    map.getContainer().style.cursor = 'crosshair';
+    setStatusText();
+  }
+  function exitPlacementMode() {
+    mode = null;
+    map.getContainer().style.cursor = '';
+    setStatusText();
+  }
+
+  document.getElementById('btnSetOrigin').onclick = () => enterPlacementMode('origin');
+  document.getElementById('btnSetBaseline').onclick = () => enterPlacementMode('baseline');
+  document.getElementById('btnClearPoints').onclick = () => {
+    [originMarker, baselineMarker].forEach(m => m && map.removeLayer(m));
+    originMarker = baselineMarker = null;
+    originLatLng = baselineLatLng = null;
+    exitPlacementMode();
+  };
+
+  map.on('click', e => {
+    if (!mode) return;
+    const ll = e.latlng;
+    if (mode === 'origin') {
+      if (originMarker) map.removeLayer(originMarker);
+      originLatLng = ll;
+      originMarker = L.circleMarker(ll, { color: '#0a0', radius: 6, weight: 2 }).addTo(map);
+    } else {
+      if (baselineMarker) map.removeLayer(baselineMarker);
+      baselineLatLng = ll;
+      baselineMarker = L.circleMarker(ll, { color: '#00a', radius: 6, weight: 2 }).addTo(map);
+    }
+    exitPlacementMode();
+  });
+
+  // --- Zoom to Location ---
+  document.getElementById('btnZoomTo').onclick = () => {
+    const lat = parseFloat(document.getElementById('zoomLat').value);
+    const lon = parseFloat(document.getElementById('zoomLon').value);
+    if (isNaN(lat) || isNaN(lon)) { alert('Invalid latitude or longitude.'); return; }
+    map.setView([lat, lon], 18);
+  };
+
+  // --- Numbering Preview ---
+  document.getElementById('numberingScheme').onchange = () => {
+    const s = document.getElementById('numberingScheme').value;
+    const p = document.getElementById('numberingPreview');
+    if (s === 'row') p.innerHTML = '101 → 106<br>201 → 206';
+    else if (s === 'column') p.innerHTML = '101 201 301<br>102 202 302';
+    else p.innerHTML = '101 → 106<br>206 ← 201';
+  };
+
+  // --- UTM Helper ---
+  function getUtmZone(lon, lat) {
+    const zone = Math.floor((lon + 180) / 6) + 1;
+    const hem = lat >= 0 ? 'N' : 'S';
+    const epsg = (hem === 'N' ? 32600 : 32700) + zone;
+    return { zone, hem, epsg };
+  }
+
+  // --- Generate Layout ---
+  function toMeters(v, u) { return u === 'imperial' ? v * 0.3048 : v; }
+
+  document.getElementById('btnGenerate').onclick = () => {
+    if (!originLatLng || !baselineLatLng) { alert('Set Origin and Baseline'); return; }
+    const units = document.getElementById('units').value;
+    const ref = document.getElementById('originRef').value;
+    const scheme = document.getElementById('numberingScheme').value;
+    if (!units || !ref) { alert('Select units and origin reference.'); return; }
+
+    const nTreat = +document.getElementById('nTreat').value;
+    const nReps = +document.getElementById('nReps').value;
+    let w = toMeters(+document.getElementById('plotWidth').value, units);
+    let l = toMeters(+document.getElementById('plotLength').value, units);
+    let repGap = toMeters(+document.getElementById('spaceBetweenReps').value || 0, units);
+    let bufL = toMeters(+document.getElementById('leftBuffer').value || 0, units);
+    let bufR = toMeters(+document.getElementById('rightBuffer').value || 0, units);
+    let bufBack = toMeters(+document.getElementById('backBuffer').value || 0, units);
+    let bufFront = toMeters(+document.getElementById('frontBuffer').value || 0, units);
+
+    [bufFront, bufBack] = [bufBack, bufFront];
+
+    if (!(nTreat && nReps && w && l)) { alert('Enter treatments, reps, plot width, plot length.'); return; }
+    if (w <= 0 || l <= 0 || repGap < 0 || bufL < 0 || bufR < 0 || bufBack < 0 || bufFront < 0) {
+      alert('All dimensions must be positive (except space between reps ≥ 0).');
+      return;
+    }
+
+    plotLayer.clearLayers(); areaLayer.clearLayers(); pointLayer.clearLayers();
+
+    const origLL = [originLatLng.lng, originLatLng.lat];
+    const baseLL = [baselineLatLng.lng, baselineLatLng.lat];
+    const avgLon = (origLL[0] + baseLL[0]) / 2;
+    const avgLat = (origLL[1] + baseLL[1]) / 2;
+    const utm = getUtmZone(avgLon, avgLat);
+    const wgs84 = 'EPSG:4326';
+    const utmProj = `EPSG:${utm.epsg}`;
+    proj4.defs(wgs84, '+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs');
+    proj4.defs(utmProj, `+proj=utm +zone=${utm.zone} ${utm.hem === 'S' ? '+south' : ''} +ellps=WGS84 +datum=WGS84 +units=m +no_defs`);
+
+    const origXY = proj4(wgs84, utmProj, origLL);
+    const baseXY = proj4(wgs84, utmProj, baseLL);
+
+    const dx = baseXY[0] - origXY[0];
+    const dy = baseXY[1] - origXY[1];
+    const dist = Math.hypot(dx, dy);
+    if (dist === 0) { alert('Baseline must be different from origin.'); return; }
+    const ux = dx / dist, uy = dy / dist;
+    const fx = -uy, fy = ux;
+
+    const gridW = nTreat * w;
+    const gridH = nReps * l + (nReps - 1) * repGap;
+
+    let trueOrigXY = [...origXY];
+    if (ref === 'area') {
+      trueOrigXY[0] += bufL * ux + bufBack * fx;
+      trueOrigXY[1] += bufL * uy + bufBack * fy;
+    }
+
+    const plotsFC = { type: 'FeatureCollection', features: [] };
+    const centersFC = { type: 'FeatureCollection', features: [] };
+    const verticesFC = { type: 'FeatureCollection', features: [] };
+    const showLabels = document.getElementById('toggleLabels').checked;
+
+    for (let r = 0; r < nReps; r++) {
+      for (let c = 0; c < nTreat; c++) {
+        const ox = c * w, oy = r * (l + repGap);
+        const llXY = [trueOrigXY[0] + ox * ux + oy * fx, trueOrigXY[1] + ox * uy + oy * fy];
+        const lrXY = [llXY[0] + w * ux, llXY[1] + w * uy];
+        const urXY = [lrXY[0] + l * fx, lrXY[1] + l * fy];
+        const ulXY = [llXY[0] + l * fx, llXY[1] + l * fy];
+
+        const llLL = proj4(utmProj, wgs84, llXY);
+        const lrLL = proj4(utmProj, wgs84, lrXY);
+        const urLL = proj4(utmProj, wgs84, urXY);
+        const ulLL = proj4(utmProj, wgs84, ulXY);
+
+        const coords = [[[llLL[0], llLL[1]], [lrLL[0], lrLL[1]], [urLL[0], urLL[1]], [ulLL[0], ulLL[1]], [llLL[0], llLL[1]]]];
+        
+        // Smart Plot ID
+        let id;
+        if (scheme === 'row') {
+          id = (r + 1) * 100 + (c + 1);
+        } else if (scheme === 'column') {
+          id = (c + 1) * 100 + (r + 1);
+        } else if (scheme === 'snake') {
+          const rep = r + 1;
+          const treat = (r % 2 === 0) ? (c + 1) : (nTreat - c);
+          id = rep * 100 + treat;
+        }
+
+        const poly = turf.polygon(coords, { id });
+        plotsFC.features.push(poly);
+        const cent = turf.centroid(poly); cent.properties = { plotId: id }; centersFC.features.push(cent);
+        coords[0].slice(0, 4).forEach((co, i) => verticesFC.features.push(turf.point([co[0], co[1]], { plotId: id, vertex: i + 1 })));
+        const shape = L.polygon(coords[0].map(c => [c[1], c[0]]), { color: '#2b7cff', weight: 1, fillOpacity: 0.3 });
+        if (showLabels) shape.bindTooltip(id.toString(), { permanent: true, direction: 'center' });
+        shape.addTo(plotLayer);
+      }
+    }
+
+    const gridCoords = [[0,0],[gridW,0],[gridW,gridH],[0,gridH],[0,0]].map(o => {
+      const xy = [trueOrigXY[0] + o[0]*ux + o[1]*fx, trueOrigXY[1] + o[0]*uy + o[1]*fy];
+      return proj4(utmProj, wgs84, xy);
+    });
+    const totalResearchPoly = turf.polygon([gridCoords], { name: 'TotalResearchArea' });
+    L.polygon(gridCoords.map(c => [c[1], c[0]]), { color: '#d11a2a', weight: 2, fillOpacity: 0.05 }).addTo(areaLayer);
+
+    let areaOrigXY = [...origXY];
+    let minX, maxX, minY, maxY;
+    if (ref === 'plot') {
+      minX = -bufL; maxX = gridW + bufR; minY = -bufBack; maxY = gridH + bufFront;
+    } else {
+      minX = 0; maxX = bufL + gridW + bufR; minY = 0; maxY = bufBack + gridH + bufFront;
+    }
+    const totalCoords = [[minX,minY],[maxX,minY],[maxX,maxY],[minX,maxY],[minX,minY]].map(o => {
+      const xy = [areaOrigXY[0] + o[0]*ux + o[1]*fx, areaOrigXY[1] + o[0]*uy + o[1]*fy];
+      return proj4(utmProj, wgs84, xy);
+    });
+    const totalAreaGeo = turf.polygon([totalCoords], { name: 'TotalAreaWithBuffers' });
+    L.polygon(totalCoords.map(c => [c[1], c[0]]), { color: '#ffa500', weight: 2, fillOpacity: 0.05 }).addTo(areaLayer);
+
+    const totalVertices = { type: 'FeatureCollection', features: [] };
+    totalCoords.slice(0, 4).forEach((co, i) => totalVertices.features.push(turf.point(co, { vertex: i + 1 })));
+
+    verticesFC.features.forEach(f => L.circleMarker([f.geometry.coordinates[1], f.geometry.coordinates[0]], { radius: 3, color: '#f1c40f' }).addTo(pointLayer));
+    centersFC.features.forEach(f => L.circleMarker([f.geometry.coordinates[1], f.geometry.coordinates[0]], { radius: 5, color: '#000', fillColor: '#fff', weight: 1 }).addTo(pointLayer));
+
+    map.fitBounds(totalCoords.map(c => [c[1], c[0]]));
+
+    const totalDist = turf.distance(turf.point(totalCoords[0]), turf.point(totalCoords[2]));
+    if (totalDist > 10) {
+      status.innerHTML += '<br><em>Large area detected—verify with desktop GIS.</em>';
+    }
+
+    const crs = { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } };
+    [plotsFC, centersFC, verticesFC, totalVertices].forEach(fc => fc.crs = crs);
+    const totalAreaGeoWithCrs = { ...totalAreaGeo, crs };
+
+    // --- RESTORED: File Generation & Download ---
+    const files = [
+      { name: 'plots.geojson', text: JSON.stringify(plotsFC, null, 2) },
+      { name: 'total_research_area.kml', text: tokml(totalResearchPoly, { name: 'name' }) },
+      { name: 'total_area.geojson', text: JSON.stringify(totalAreaGeoWithCrs, null, 2) },
+      { name: 'total_area_vertices.geojson', text: JSON.stringify(totalVertices, null, 2) },
+      { name: 'vertices.geojson', text: JSON.stringify(verticesFC, null, 2) },
+      { name: 'centers.geojson', text: JSON.stringify(centersFC, null, 2) }
+    ];
+
+    let centersCsv = 'plot_id,lat,lon\n';
+    centersFC.features.forEach(f => centersCsv += `${f.properties.plotId},${f.geometry.coordinates[1]},${f.geometry.coordinates[0]}\n`);
+    files.push({ name: 'centers.csv', text: centersCsv });
+
+    let obCsv = 'point_type,lat,lon\n';
+    if (originLatLng) obCsv += `origin,${originLatLng.lat},${originLatLng.lng}\n`;
+    if (baselineLatLng) obCsv += `baseline,${baselineLatLng.lat},${baselineLatLng.lng}\n`;
+    files.push({ name: 'origin_baseline.csv', text: obCsv });
+
+    let totalCsv = 'vertex,lat,lon\n';
+    totalVertices.features.forEach(f => totalCsv += `${f.properties.vertex},${f.geometry.coordinates[1]},${f.geometry.coordinates[0]}\n`);
+    files.push({ name: 'total_area_vertices.csv', text: totalCsv });
+
+    const links = document.getElementById('linksHere');
+    links.innerHTML = '';
+    files.forEach(f => {
+      const blob = new Blob([f.text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = f.name; a.textContent = `Download ${f.name}`;
+      a.style.display = 'block'; links.appendChild(a);
+    });
+    document.getElementById('fileLinks').style.display = 'block';
+
+    document.getElementById('btnDownloadZip').onclick = async () => {
+      const zip = new JSZip();
+      files.forEach(f => zip.file(f.name, f.text));
+      const blob = await zip.generateAsync({ type: 'blob' });
+      saveAs(blob, 'research_layout_files.zip');
+    };
+
+    status.innerHTML = `Generated ${nTreat * nReps} plots. UTM Zone: ${utm.zone}${utm.hem}.`;
+  };
+
+  document.getElementById('toggleLabels').addEventListener('change', () => {
+    const show = document.getElementById('toggleLabels').checked;
+    plotLayer.eachLayer(l => {
+      const t = l.getTooltip?.();
+      if (t) { show ? l.openTooltip() : l.closeTooltip(); }
+    });
+  });
+
+  setStatusText();
+  </script>
+</body>
+</html>
