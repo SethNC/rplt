@@ -9,17 +9,22 @@ Research Plot Layout Tool for replicated agricultural field trials.
 
 This tool coupled with a [SprakFun Facet and SW Maps](https://learn.sparkfun.com/tutorials/sparkfun-rtk-facet-hookup-guide/all) allows for rapid and accurate plot layout in the field.
 
-Use 'total_research_area.kml' to plan drone missions to monitor the trial during the growing season. This file can be loaded into a DJI Mavic 3 Multispectral from a SD card and used as the boundary for flight missions. Be sure to set the margin in the advanced settings so their is sufficiuent overlap at the edges of the trial for good orthomosaic reconstruction.  
+Use 'total_research_area.kml' to plan drone missions to monitor the trial during the growing season. This file can be loaded into a DJI Mavic 3 Multispectral from a SD card and used as the boundary for flight missions. Be sure to set the margin in the advanced settings so there is sufficiuent overlap at the edges of the trial for good orthomosaic reconstruction.  
 
-If applying treatments with a spray drone or percision ag equipement the plot polygons can be used as field boundaries to program the application equipement. If need to be sure to plan a buffered area to clean out and prime the spray drone or application equipement between treatment applications. 
+If applying treatments with a spray drone or percision ag equipement the plot polygons can be used as field boundaries to program the application equipement. A buffer can be planned on the edge for sprayer clean out and priming application equipement between treatment applications. 
 
-When analysing data, plot boundaries are already defined and should shorten the inlitial analysis.
+When analysing data, plot boundaries are already defined and shorten the inlitial analysis.
 
-This tool is a perfect companion for QGIS or other GIS tool. This provides a starting place to rapidly layout field trials and program drones.
+This tool is a perfect companion for QGIS. This provides a starting place to rapid trial layout and drone programming.
 
 ## Summary of work flow 
 
-— define your origin, baseline, plot dimensions, treatments, replications, buffers, and generate GIS-ready files instantly.
+- Set trial location with origin, and baseline.
+- Select standard or metric measurement units.
+- Choose a trial numbering scheme.
+- Set number of treatments and replications.
+- Define plot dimensions and buffers.
+- Generate files instantly and download.
 
 ---
 
@@ -50,7 +55,7 @@ This tool is a perfect companion for QGIS or other GIS tool. This provides a sta
 
 Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com/d2lf.html) 
 
-**Demo Data** - Use the data below to experiment with the tool. See the screenshots below for examples using this demo data. 
+**Demo Data** - Use the data below to experiment with the tool. See the screenshots below for examples using demo data. 
 - Custom Map: <pre>https\:\/\/miguel.nyc3.digitaloceanspaces.com/{z}/{x}/{-y}.png</pre>
 - Zoom location: 35.731585,-78.702636
 - Origin: 35.731086,-78.701864
