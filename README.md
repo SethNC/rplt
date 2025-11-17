@@ -17,6 +17,7 @@ When analysing data, plot boundaries are already defined and shorten the inlitia
 
 This tool is a perfect companion for QGIS. This provides a starting place to rapid trial layout and drone programming.
 
+
 ## Summary of work flow 
 
 - Set trial location with origin, and baseline.
@@ -26,7 +27,6 @@ This tool is a perfect companion for QGIS. This provides a starting place to rap
 - Define plot dimensions and buffers.
 - Generate files instantly and download.
 
----
 
 ## 🌟 Features
 
@@ -49,7 +49,6 @@ This tool is a perfect companion for QGIS. This provides a starting place to rap
   - CSV (centers, origin/baseline, vertices)
 - **Download all files individually or as ZIP**
 
----
 
 ## 🚀 Live Demo
 
@@ -61,7 +60,6 @@ Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com
 - Origin: 35.731086,-78.701864
 - Baseline: 35.731985,-78.701798
 
----
 
 ## 📸 Screenshot
 
@@ -69,7 +67,6 @@ Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com
 ![Research Plot Layout Tool Screenshot 2](./rplt_1.png)
 > *Example layout 4 treatments × 4 replications, 25m x 25m plots, 5m buffers with 10m on plot front, and Row-major numbering*
 
----
 
 ## 🛠️ How to Use
 
@@ -85,7 +82,6 @@ Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com
 
 > 💡 **Pro Tip**: Use the "Zoom to Location" panel to quickly navigate to your field. Use google.com/maps if you need to rapidly find latitude and longitude of your trial. These can be copied from Google Maps by right clicking on the location. 
 
----
 
 ## 📂 Output Files
 
@@ -99,7 +95,6 @@ Try it now: [research-plot-layout-tool](https://ncsu.nyc3.digitaloceanspaces.com
 | `origin_baseline.csv` | Origin and baseline coordinates |
 | `total_area_vertices.csv` | Corners of the total buffered area |
 
----
 
 ## 🗺️ Custom Tile Layers
 
@@ -109,7 +104,8 @@ Already have an orthomosaic? Use QGIS to generate the tiles. Open the processing
 
 Be sure you know the format of your tiles. If in TMS form be sure to use a '-y' value such as this example '{z}/{x}/{-y}.png`. 
 
-### 🧠 Design Philosophy: *Do One Thing Well*
+
+## 🧠 Design Philosophy: *Do One Thing Well*
 
 This tool follows the **Unix philosophy** — *programs that do one thing and do it well* 
 
@@ -119,7 +115,6 @@ This tool is designed for:
 - Producing intermediate outputs in GeoJSON, CSV, KML formats
 - Sticking to data science principles, reproducibility + transparency > automation
 
----
 
 **Learn more about the Unix philosophy**:  
 [“The Art of Unix Programming” by Eric S. Raymond](http://www.catb.org/esr/writings/taoup/html/ch01s06.html) – Chapter on modularity and transparency
