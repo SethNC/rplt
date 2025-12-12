@@ -1,7 +1,7 @@
 # rplt - Research Plot Layout Tool
 Research Plot Layout Tool for replicated agricultural field trials. 
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 [![Leaflet](https://img.shields.io/badge/Powered%20by-Leaflet-blue)](https://leafletjs.com/)
 [![Turf.js](https://img.shields.io/badge/Geometry-Turf.js-green)](https://turfjs.org/)
 
